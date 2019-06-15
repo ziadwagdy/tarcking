@@ -126,178 +126,183 @@
 
             $('#searchByShiptId').click(function () {
 
-                var requestData = document.getElementById("txtId").value;
+                setInterval(function () {
+                    var requestData = document.getElementById("txtId").value;
 
-                // If the user hasn't entered any value: 
-                if (requestData == '') {
-                    alert("Please enter The Shipment ID");
-                    // Otherwise, 
-                } else {
-                    $.getJSON('http://34.83.2.150:3000/api/Shipment/' + requestData, function (data) {
+                    // If the user hasn't entered any value: 
+                    if (requestData == '') {
+                        alert("Please enter The Shipment ID");
+                        // Otherwise, 
+                    } else {
+                        $.getJSON('http://34.83.2.150:3000/api/Shipment/' + requestData, function (data) {
 
-                        // Representing Shipment Data: 
-                        var shipmentTableBody = document.getElementById("shipmentTable");
+                            // Representing Shipment Data: 
+                            var shipmentTableBody = document.getElementById("shipmentTable");
 
-                        // Retrieving Contract ID to get contract data
-                        var contract_id = data["contract"].split('#')[1];
-
-
-                        // Deleting unnecessary data. 
-                        delete data["$class"];
-
-                        // iterting on the shipment data: @data
-                        for (var key in data) {
-
-                            var tr = "<tr>";
-
-                            var value = data[key];
-
-                            // Formatting emails.
-                            if (/#/.test(value)) {
-                                value = value.split('#')[1];
-                            }
-
-                            tr += "<td>" + key + "</td>" + "<td>" + value + "</td></tr>";
-                            shipmentTableBody.innerHTML += tr;
-
-                            if (key == "contract") { break; }
-                        }
+                            // Retrieving Contract ID to get contract data
+                            var contract_id = data["contract"].split('#')[1];
 
 
-                        // Retrieve Contract Data. 
-                        $.getJSON('http://34.83.2.150:3000/api/Contract/' + contract_id, function (data) {
-
-                            // Represent ConTract Data.
-                            var contractTableBody = document.getElementById("contractTable");
-
+                            // Deleting unnecessary data. 
                             delete data["$class"];
 
+                            shipmentTableBody.innerHTML = "";
+                            // iterting on the shipment data: @data
                             for (var key in data) {
+
                                 var tr = "<tr>";
 
                                 var value = data[key];
 
-                                // Formatting Emails
-                                if (/@/.test(value)) {
+                                // Formatting emails.
+                                if (/#/.test(value)) {
                                     value = value.split('#')[1];
                                 }
 
                                 tr += "<td>" + key + "</td>" + "<td>" + value + "</td></tr>";
-                                contractTableBody.innerHTML += tr;
+                                shipmentTableBody.innerHTML += tr;
 
+                                if (key == "contract") { break; }
                             }
+
+
+                            // Retrieve Contract Data. 
+                            $.getJSON('http://34.83.2.150:3000/api/Contract/' + contract_id, function (data) {
+
+                                // Represent ConTract Data.
+                                var contractTableBody = document.getElementById("contractTable");
+
+                                delete data["$class"];
+                                contractTableBody.innerHTML = "";
+                                for (var key in data) {
+                                    var tr = "<tr>";
+
+                                    var value = data[key];
+
+                                    // Formatting Emails
+                                    if (/@/.test(value)) {
+                                        value = value.split('#')[1];
+                                    }
+
+                                    tr += "<td>" + key + "</td>" + "<td>" + value + "</td></tr>";
+                                    contractTableBody.innerHTML += tr;
+
+                                }
+                            });
+                            // Populate the data into a Table 
+                            var tempTableBody = document.getElementById('tempTableBody');
+
+                            // Populate the data into a Table  
+                            var gpsTableBody = document.getElementById('gpsTableBody');
+
+                            // The table
+                            var accelTableBody = document.getElementById('accelTableBody');
+
+
+
+                            // Variables needed for Tempreature. 
+                            var tempReading = data["temperatureReadings"];
+
+                            // Variables needed for Acceleration. 
+                            var accelReading = data["AccelReadings"];
+
+                            // Variables needed for Gps Reading. 
+                            var gpsReading = data["gpsReadings"];
+
+
+                            // Dictionary Length
+                            DICT_LENGHT = Object.keys(accelReading).length;
+
+                            // Iterate over The dictionary until its empty
+                            for (var i = 0; i < DICT_LENGHT; i++) {
+
+                                (function (i) {
+
+                                    setTimeout(function () {
+                                        // deleting unnecessary data from the dict..
+                                        delete tempReading[i]["shipment"];
+
+                                        delete tempReading[i]["transactionId"]
+
+                                        delete tempReading[i]["$class"];
+
+                                        delete gpsReading[i]["shipment"];
+
+                                        delete gpsReading[i]["transactionId"];
+
+                                        delete gpsReading[i]["$class"];
+
+                                        delete accelReading[i]["shipment"];
+
+                                        delete accelReading[i]["transactionId"];
+
+                                        delete accelReading[i]["$class"];
+
+                                        // Reading Gps data by index 
+                                        gpsData = gpsReading[i];
+
+                                        // Empty the table of the Gps reading. 
+                                        gpsTableBody.innerHTML = "";
+
+                                        // Iterating on the GPS data. 
+                                        for (var key in gpsData) {
+
+                                            var tr = "<tr>";
+
+                                            tr += "<td>" + key + "</td>" + "<td>" + gpsData[key] + "</td></tr>";
+
+                                            /* We add the table row to the table body */
+                                            gpsTableBody.innerHTML += tr;
+                                        }
+
+                                        // Reading Temp data by index
+                                        tempData = tempReading[i];
+
+                                        // Removing old data in the Table. 
+                                        tempTableBody.innerHTML = "";
+
+                                        // iterating on the Temp. Data sdd 
+                                        for (var key in tempData) {
+
+                                            var tr = "<tr>";
+
+                                            tr += "<td>" + key + "</td>" + "<td>" + tempData[key] + "</td></tr>";
+
+                                            /* We add the table row to the table body */
+                                            tempTableBody.innerHTML += tr;
+                                        }
+
+
+                                        // Each reading is also a dictionary
+                                        accelData = accelReading[i];
+
+                                        // Removing old data in the Table. 
+                                        accelTableBody.innerHTML = "";
+
+                                        // Iterating over each reading
+                                        for (var key in accelData) {
+
+                                            var tr = "<tr>";
+
+                                            //Create new table rows
+                                            tr += "<td>" + key + "</td>" + "<td>" + accelData[key] + "</td></tr>";
+
+                                            // Update the table with the new rows 
+                                            accelTableBody.innerHTML += tr;
+                                        }
+                                        // This happens every two seconds
+                                        // Updatin the index of the loop [i]
+                                    }, 5000 * i);
+                                })(i);
+                            };
                         });
-                        // Populate the data into a Table 
-                        var tempTableBody = document.getElementById('tempTableBody');
+                    }
+                });
 
-                        // Populate the data into a Table  
-                        var gpsTableBody = document.getElementById('gpsTableBody');
-
-                        // The table
-                        var accelTableBody = document.getElementById('accelTableBody');
-
-
-
-                        // Variables needed for Tempreature. 
-                        var tempReading = data["temperatureReadings"];
-
-                        // Variables needed for Acceleration. 
-                        var accelReading = data["AccelReadings"];
-
-                        // Variables needed for Gps Reading. 
-                        var gpsReading = data["gpsReadings"];
-
-
-                        // Dictionary Length
-                        DICT_LENGHT = Object.keys(accelReading).length;
-
-                        // Iterate over The dictionary until its empty
-                        for (var i = 0; i < DICT_LENGHT; i++) {
-
-                            (function (i) {
-
-                                setTimeout(function () {
-                                    // deleting unnecessary data from the dict..
-                                    delete tempReading["shipment"];
-
-                                    delete tempReading["transactionId"]
-
-                                    delete tempReading["$class"];
-
-                                    delete gpsReading["shipment"];
-
-                                    delete gpsReading["transactionId"];
-
-                                    delete gpsReading["$class"];
-
-                                    delete accelReading["shipment"];
-
-                                    delete accelReading["transactionId"];
-
-                                    delete accelReading["$class"];
-
-                                    // Reading Gps data by index 
-                                    gpsData = gpsReading[i];
-
-                                    // Empty the table of the Gps reading. 
-                                    gpsTableBody.innerHTML = "";
-
-                                    // Iterating on the GPS data. 
-                                    for (var key in gpsData) {
-
-                                        var tr = "<tr>";
-
-                                        tr += "<td>" + key + "</td>" + "<td>" + gpsData[key] + "</td></tr>";
-
-                                        /* We add the table row to the table body */
-                                        gpsTableBody.innerHTML += tr;
-                                    }
-
-                                    // Reading Temp data by index
-                                    tempData = tempReading[i];
-
-                                    // Removing old data in the Table. 
-                                    tempTableBody.innerHTML = "";
-
-                                    // iterating on the Temp. Data sdd 
-                                    for (var key in tempData) {
-
-                                        var tr = "<tr>";
-
-                                        tr += "<td>" + key + "</td>" + "<td>" + tempData[key] + "</td></tr>";
-
-                                        /* We add the table row to the table body */
-                                        tempTableBody.innerHTML += tr;
-                                    }
-
-
-                                    // Each reading is also a dictionary
-                                    accelData = accelReading[i];
-
-                                    // Removing old data in the Table. 
-                                    accelTableBody.innerHTML = "";
-
-                                    // Iterating over each reading
-                                    for (var key in accelData) {
-
-                                        var tr = "<tr>";
-
-                                        //Create new table rows
-                                        tr += "<td>" + key + "</td>" + "<td>" + accelData[key] + "</td></tr>";
-
-                                        // Update the table with the new rows 
-                                        accelTableBody.innerHTML += tr;
-                                    }
-                                    // This happens every two seconds
-                                    // Updatin the index of the loop [i]
-                                }, 2000 * i);
-                            })(i);
-                        };
-                    });
-                }
             });
+        }, 30 * 1000 );
 
-        }); 
+
     </script>
     </script>
 
