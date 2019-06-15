@@ -8,19 +8,34 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link href="https://fonts.googleapis.com/css?family=Noto+Serif" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="css/form2.css" media="all">
     <script type="text/javascript" src="js/form2.js"></script>
     <style>
-        table,
-        th,
-        td {
-            border: 3px solid black;
-            padding: 5px;
+        label.description {
+            font-size: 268%;
+            font-weight: bold;
+            text-align: left;
+            line-height: 125%;
+            font-family: 'Noto Serif', serif;
+            text-align: center;
         }
 
-        table {
-            margin-left: 5%;
-            border-spacing: 15px;
+        #li_2 {
+            text-align: center;
+        }
+
+        #txtId {
+            margin-top: 3%;
+        }
+
+        .buttons {
+            text-align: center;
+        }
+
+        #searchByShiptId {
+            font-weight: bold;
         }
     </style>
 </head>
@@ -35,9 +50,9 @@
             <ul class="nav navbar-nav navbar-right">
                 <li class="active"><a href="graduation.html"><span style="color:#dd6215 ">HOME</span></a></li>
                 <li><a href="form.html">REGISTER</a></li>
-                <li><a href="form2.html">LOGIN</a></li>
+                <li><a href="track%20(2).html">LOGIN</a></li>
                 <li><a href="#">SERVICES</a></li>
-                <li><a href="#">CONTACT</a></li>
+                <li><a href="#lastsection">CONTACT</a></li>
             </ul>
         </div>
     </nav>
@@ -50,7 +65,7 @@
 
             <ul>
                 <li id="li_2">
-                    <label class="description" for="element_2">Shipment Id </label>
+                    <label class="description" for="element_2">Enter Shipment ID </label>
                     <div>
                         <input id="txtId" name="element_2" class="element text medium" type="text" maxlength="255"
                             value="" />
@@ -62,7 +77,7 @@
                 <li class="buttons">
                     <input type="hidden" name="form_id" value="52247" />
 
-                    <input id="searchByShiptId" class="button_text" type="button" name="submit"
+                    <input id="searchByShiptId" class="button_text btn btn-warning" type="button" name="submit"
                         value="Search by Shipment Id" />
                 </li>
 
@@ -71,47 +86,43 @@
                 <div id="myShipment"></div>
                 -->
                 <!-- View data through a table -->
-                <h3 style="margin-left: 5%">Shipment data:</h3>
-                <table>
+                <h3 id="TableHeadShipm" style="margin-left: 5%"></h3>
+                <table class="w3-table-all">
                     <tbody id="shipmentTable"></tbody>
                 </table>
 
-                <br>
                 <!-- To view the Contarct details. 
                 <h3>Contract details: </h3>
                 <div id="myContract"></div>
                 -->
                 <!-- View data through a table -->
-                <h3 style="margin-left: 5%">Contract data:</h3>
-                <table>
+                <h3 id="TableHeadContract" style="margin-left: 5%"></h3>
+                <table class="w3-table-all">
                     <tbody id="contractTable"></tbody>
                 </table>
 
 
                 <!-- View Temprature Data through a table-->
-                <h3 style="margin-left: 5%">Temp reading:</h3>
-                <table>
+                <h3 id="TableHeadTemp" style="margin-left: 5%"></h3>
+                <table class="w3-table-all">
                     <tbody id="tempTableBody"></tbody>
                 </table>
 
                 <!-- View Acceleration Data through a table-->
-                <h3 style="margin-left: 5%">Accel reading:</h3>
-                <table>
+                <h3 id="TableHeadAccel" style="margin-left: 5%"></h3>
+                <table class="w3-table-all">
                     <tbody id="accelTableBody"></tbody>
                 </table>
-
                 <!-- View Acceleration Data through a table-->
-                <h3 style="margin-left: 5%">GPS reading:</h3>
-                <table>
+                <h3 id="TableHeadGps" style="margin-left: 5%"></h3>
+                <table class="w3-table-all">
                     <tbody id="gpsTableBody"></tbody>
                 </table>
-
             </ul>
         </form>
-        <table>
+        <table class="w3-table-all">
             <tbody id="tbody"></tbody>
         </table>
-    </div>
     </div>
     <img id="bottom" src="images/bottom1.png" alt="">
 
@@ -125,16 +136,23 @@
         $(document).ready(function () {
 
             $('#searchByShiptId').click(function () {
+                var requestData = document.getElementById("txtId").value;
+                // If the user hasn't entered any value: 
+                if (requestData == '') {
+                    alert("Please enter The Shipment ID");
+                    // Otherwise, 
+                } else {
+                    setInterval(function () {
 
-                setInterval(function () {
-                    var requestData = document.getElementById("txtId").value;
 
-                    // If the user hasn't entered any value: 
-                    if (requestData == '') {
-                        alert("Please enter The Shipment ID");
-                        // Otherwise, 
-                    } else {
                         $.getJSON('http://34.83.2.150:3000/api/Shipment/' + requestData, function (data) {
+
+                            document.getElementById("TableHeadGps").innerHTML = "GPS reading:";
+                            document.getElementById("TableHeadTemp").innerHTML = "Temp reading:";
+                            document.getElementById("TableHeadAccel").innerHTML = "Accel reading:";
+                            document.getElementById("TableHeadContract").innerHTML = "Contract details:";
+                            document.getElementById("TableHeadShipm").innerHTML = "Shipment Details:";
+
 
                             // Representing Shipment Data: 
                             var shipmentTableBody = document.getElementById("shipmentTable");
@@ -213,6 +231,7 @@
                             // Dictionary Length
                             DICT_LENGHT = Object.keys(accelReading).length;
 
+
                             // Iterate over The dictionary until its empty
                             for (var i = 0; i < DICT_LENGHT; i++) {
 
@@ -289,23 +308,22 @@
 
                                             // Update the table with the new rows 
                                             accelTableBody.innerHTML += tr;
+
                                         }
                                         // This happens every two seconds
                                         // Updatin the index of the loop [i]
-                                    },2000*i);
+                                    }, 2000 * i);
                                 })(i);
                             };
                         });
-                    }
-                });
 
+                    });
+                }
             });
-        }, 30 * 1000 );
+        }, 3000);
 
 
     </script>
-    </script>
-
 </body>
 
 </html>
