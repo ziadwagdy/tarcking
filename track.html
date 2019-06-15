@@ -1,0 +1,306 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Shipments</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/form2.css" media="all">
+    <script type="text/javascript" src="js/form2.js"></script>
+    <style>
+        table,
+        th,
+        td {
+            border: 3px solid black;
+            padding: 5px;
+        }
+
+        table {
+            margin-left: 5%;
+            border-spacing: 15px;
+        }
+    </style>
+</head>
+
+<body id="main_body">
+    <!--nav-->
+    <nav class="navbar navbar-inverse" style="margin-bottom: 0;border-radius: 0;">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="graduation.html"><span style="color:#dd6215 ">T</span>racking system</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="active"><a href="graduation.html"><span style="color:#dd6215 ">HOME</span></a></li>
+                <li><a href="form.html">REGISTER</a></li>
+                <li><a href="form2.html">LOGIN</a></li>
+                <li><a href="#">SERVICES</a></li>
+                <li><a href="#">CONTACT</a></li>
+            </ul>
+        </div>
+    </nav>
+    <img id="top" src="images/top1.png" alt="">
+    <div id="form_container">
+
+        <h1><a>Shipment</a></h1>
+
+        <form id="form_52247" class="appnitro" method="post" action="">
+
+            <ul>
+                <li id="li_2">
+                    <label class="description" for="element_2">Shipment Id </label>
+                    <div>
+                        <input id="txtId" name="element_2" class="element text medium" type="text" maxlength="255"
+                            value="" />
+                    </div>
+                </li>
+
+                <br>
+
+                <li class="buttons">
+                    <input type="hidden" name="form_id" value="52247" />
+
+                    <input id="searchByShiptId" class="button_text" type="button" name="submit"
+                        value="Search by Shipment Id" />
+                </li>
+
+
+                <!-- To view the shipment details.  Value = data 
+                <div id="myShipment"></div>
+                -->
+                <!-- View data through a table -->
+                <h3 style="margin-left: 5%">Shipment data:</h3>
+                <table>
+                    <tbody id="shipmentTable"></tbody>
+                </table>
+
+                <br>
+                <!-- To view the Contarct details. 
+                <h3>Contract details: </h3>
+                <div id="myContract"></div>
+                -->
+                <!-- View data through a table -->
+                <h3 style="margin-left: 5%">Contract data:</h3>
+                <table>
+                    <tbody id="contractTable"></tbody>
+                </table>
+
+
+                <!-- View Temprature Data through a table-->
+                <h3 style="margin-left: 5%">Temp reading:</h3>
+                <table>
+                    <tbody id="tempTableBody"></tbody>
+                </table>
+
+                <!-- View Acceleration Data through a table-->
+                <h3 style="margin-left: 5%">Accel reading:</h3>
+                <table>
+                    <tbody id="accelTableBody"></tbody>
+                </table>
+
+                <!-- View Acceleration Data through a table-->
+                <h3 style="margin-left: 5%">GPS reading:</h3>
+                <table>
+                    <tbody id="gpsTableBody"></tbody>
+                </table>
+
+            </ul>
+        </form>
+        <table>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+    </div>
+    <img id="bottom" src="images/bottom1.png" alt="">
+
+
+
+    <!--
+        Reading "JSON" data (Shipment, Contract) Using Shipment ID, and fetched Contract ID,
+        from the Hyperledger composer REST API,
+    -->
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('#searchByShiptId').click(function () {
+
+                var requestData = document.getElementById("txtId").value;
+
+                // If the user hasn't entered any value: 
+                if (requestData == '') {
+                    alert("Please enter The Shipment ID");
+                    // Otherwise, 
+                } else {
+                    $.getJSON('http://34.83.2.150:3000/api/Shipment/' + requestData, function (data) {
+
+                        // Representing Shipment Data: 
+                        var shipmentTableBody = document.getElementById("shipmentTable");
+
+                        // Retrieving Contract ID to get contract data
+                        var contract_id = data["contract"].split('#')[1];
+
+
+                        // Deleting unnecessary data. 
+                        delete data["$class"];
+
+                        // iterting on the shipment data: @data
+                        for (var key in data) {
+
+                            var tr = "<tr>";
+
+                            var value = data[key];
+
+                            // Formatting emails.
+                            if (/#/.test(value)) {
+                                value = value.split('#')[1];
+                            }
+
+                            tr += "<td>" + key + "</td>" + "<td>" + value + "</td></tr>";
+                            shipmentTableBody.innerHTML += tr;
+
+                            if (key == "contract") { break; }
+                        }
+
+
+                        // Retrieve Contract Data. 
+                        $.getJSON('http://34.83.2.150:3000/api/Contract/' + contract_id, function (data) {
+
+                            // Represent ConTract Data.
+                            var contractTableBody = document.getElementById("contractTable");
+
+                            delete data["$class"];
+
+                            for (var key in data) {
+                                var tr = "<tr>";
+
+                                var value = data[key];
+
+                                // Formatting Emails
+                                if (/@/.test(value)) {
+                                    value = value.split('#')[1];
+                                }
+
+                                tr += "<td>" + key + "</td>" + "<td>" + value + "</td></tr>";
+                                contractTableBody.innerHTML += tr;
+
+                            }
+                        });
+                        // Populate the data into a Table 
+                        var tempTableBody = document.getElementById('tempTableBody');
+
+                        // Populate the data into a Table  
+                        var gpsTableBody = document.getElementById('gpsTableBody');
+
+                        // The table
+                        var accelTableBody = document.getElementById('accelTableBody');
+
+
+
+                        // Variables needed for Tempreature. 
+                        var tempReading = data["temperatureReadings"];
+
+                        // Variables needed for Acceleration. 
+                        var accelReading = data["AccelReadings"];
+
+                        // Variables needed for Gps Reading. 
+                        var gpsReading = data["gpsReadings"];
+
+
+                        // Dictionary Length
+                        DICT_LENGHT = Object.keys(accelReading).length;
+
+                        // Iterate over The dictionary until its empty
+                        for (var i = 0; i < DICT_LENGHT; i++) {
+
+                            (function (i) {
+
+                                setTimeout(function () {
+                                    // deleting unnecessary data from the dict..
+                                    delete tempReading["shipment"];
+
+                                    delete tempReading["transactionId"]
+
+                                    delete tempReading["$class"];
+
+                                    delete gpsReading["shipment"];
+
+                                    delete gpsReading["transactionId"];
+
+                                    delete gpsReading["$class"];
+
+                                    delete accelReading["shipment"];
+
+                                    delete accelReading["transactionId"];
+
+                                    delete accelReading["$class"];
+
+                                    // Reading Gps data by index 
+                                    gpsData = gpsReading[i];
+
+                                    // Empty the table of the Gps reading. 
+                                    gpsTableBody.innerHTML = "";
+
+                                    // Iterating on the GPS data. 
+                                    for (var key in gpsData) {
+
+                                        var tr = "<tr>";
+
+                                        tr += "<td>" + key + "</td>" + "<td>" + gpsData[key] + "</td></tr>";
+
+                                        /* We add the table row to the table body */
+                                        gpsTableBody.innerHTML += tr;
+                                    }
+
+                                    // Reading Temp data by index
+                                    tempData = tempReading[i];
+
+                                    // Removing old data in the Table. 
+                                    tempTableBody.innerHTML = "";
+
+                                    // iterating on the Temp. Data sdd 
+                                    for (var key in tempData) {
+
+                                        var tr = "<tr>";
+
+                                        tr += "<td>" + key + "</td>" + "<td>" + tempData[key] + "</td></tr>";
+
+                                        /* We add the table row to the table body */
+                                        tempTableBody.innerHTML += tr;
+                                    }
+
+
+                                    // Each reading is also a dictionary
+                                    accelData = accelReading[i];
+
+                                    // Removing old data in the Table. 
+                                    accelTableBody.innerHTML = "";
+
+                                    // Iterating over each reading
+                                    for (var key in accelData) {
+
+                                        var tr = "<tr>";
+
+                                        //Create new table rows
+                                        tr += "<td>" + key + "</td>" + "<td>" + accelData[key] + "</td></tr>";
+
+                                        // Update the table with the new rows 
+                                        accelTableBody.innerHTML += tr;
+                                    }
+                                    // This happens every two seconds
+                                    // Updatin the index of the loop [i]
+                                }, 2000 * i);
+                            })(i);
+                        };
+                    });
+                }
+            });
+
+        }); 
+    </script>
+    </script>
+
+</body>
+
+</html>
