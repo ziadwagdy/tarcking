@@ -171,9 +171,7 @@
                             var contract_id = data["contract"].split('#')[1];
 
 
-                            // Deleting unnecessary data. 
-
-
+                            /******* Shipment ******/
                             shipmentTableBody.innerHTML = "";
 
                             var shipment = data;
@@ -202,9 +200,11 @@
 
                                 // Represent ConTract Data.
                                 var contractTableBody = document.getElementById("contractTable");
-
+                    
                                 delete data["$class"];
                                 contractTableBody.innerHTML = "";
+                                
+                                /******* Shipment ******/
                                 for (var key in data) {
                                     var tr = "<tr>";
 
