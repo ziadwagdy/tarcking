@@ -88,7 +88,7 @@
                 <!-- View data through a table -->
                 <h3 id="TableHeadShipm" style="margin-left: 3%"></h3>
                 <table class="w3-table-all">
-                    <tbody id="shipmentTable"></tbody>
+                    <tbody id="shipmentTableBody"></tbody>
                 </table>
 
                 <!-- To view the Contarct details. 
@@ -132,20 +132,33 @@
         Reading "JSON" data (Shipment, Contract) Using Shipment ID, and fetched Contract ID,
         from the Hyperledger composer REST API,
     -->
-    <script type="text/javascript">
+    <script>
         $(document).ready(function () {
 
             $('#searchByShiptId').click(function () {
+                var i = 0;
                 var requestData = document.getElementById("txtId").value;
-                // If the user hasn't entered any value: 
-                if (requestData == '') {
-                    alert("Please enter The Shipment ID");
-                    // Otherwise, 
-                } else {
-                    setInterval(function () {
+                var getJSON = function (url, callback) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('get', url, true);
+                    xhr.responseType = 'json';
+                    xhr.onload = function () {
+                        var status = xhr.status;
+                        if (status == 200) {
+                            callback(null, xhr.response);
+                        } else {
+                            callback(status);
+                        }
+                    };
+                    xhr.send();
+                };
+                setInterval(function () {
+                    getJSON('http://34.83.2.150:3000/api/Shipment/' + requestData, function (err, data) {
+                        if (err != null) {
+                            alert('Something went wrong: ' + err);
+                        } else {
 
 
-                        $.getJSON('http://34.83.2.150:3000/api/Shipment/' + requestData, function (data) {
 
                             document.getElementById("TableHeadGps").innerHTML = "GPS reading:";
                             document.getElementById("TableHeadTemp").innerHTML = "Temp reading:";
@@ -153,24 +166,24 @@
                             document.getElementById("TableHeadContract").innerHTML = "Contract details:";
                             document.getElementById("TableHeadShipm").innerHTML = "Shipment Details:";
 
-
-                            // Representing Shipment Data: 
-                            var shipmentTableBody = document.getElementById("shipmentTable");
-
                             // Retrieving Contract ID to get contract data
+                            console.log(data["contract"]);
                             var contract_id = data["contract"].split('#')[1];
 
 
                             // Deleting unnecessary data. 
-                            delete data["$class"];
+
 
                             shipmentTableBody.innerHTML = "";
+
+                            var shipment = data;
+                            delete shipment["$class"];
                             // iterting on the shipment data: @data
-                            for (var key in data) {
+                            for (var key in shipment) {
 
                                 var tr = "<tr>";
 
-                                var value = data[key];
+                                var value = shipment[key];
 
                                 // Formatting emails.
                                 if (/#/.test(value)) {
@@ -207,123 +220,107 @@
 
                                 }
                             });
-                            // Populate the data into a Table 
-                            var tempTableBody = document.getElementById('tempTableBody');
-
-                            // Populate the data into a Table  
-                            var gpsTableBody = document.getElementById('gpsTableBody');
-
-                            // The table
-                            var accelTableBody = document.getElementById('accelTableBody');
 
 
-
-                            // Variables needed for Tempreature. 
-                            var tempReading = data["temperatureReadings"];
+                            function isEmptyObject(obj) {
+                                for (var key in obj) {
+                                    return false;
+                                }
+                                return true;
+                            }
 
                             // Variables needed for Acceleration. 
-                            var accelReading = data["AccelReadings"];
+                            var accelData = data["AccelReadings"][i];
 
-                            // Variables needed for Gps Reading. 
-                            var gpsReading = data["gpsReadings"];
-
-
-                            // Dictionary Length
-                            DICT_LENGHT = Object.keys(accelReading).length;
+                            // Variables needed for Gps Reading.
+                            var gpsData = data["gpsReadings"][i];
 
 
-                            // Iterate over The dictionary until its empty
-                            for (var i = 0; i < DICT_LENGHT; i++) {
-
-                                (function (i) {
-
-                                    setTimeout(function () {
-                                        // deleting unnecessary data from the dict..
-                                        delete tempReading[i]["shipment"];
-
-                                        delete tempReading[i]["transactionId"]
-
-                                        delete tempReading[i]["$class"];
-
-                                        delete gpsReading[i]["shipment"];
-
-                                        delete gpsReading[i]["transactionId"];
-
-                                        delete gpsReading[i]["$class"];
-
-                                        delete accelReading[i]["shipment"];
-
-                                        delete accelReading[i]["transactionId"];
-
-                                        delete accelReading[i]["$class"];
-
-                                        // Reading Gps data by index 
-                                        gpsData = gpsReading[i];
-
-                                        // Empty the table of the Gps reading. 
-                                        gpsTableBody.innerHTML = "";
-
-                                        // Iterating on the GPS data. 
-                                        for (var key in gpsData) {
-
-                                            var tr = "<tr>";
-
-                                            tr += "<td>" + key + "</td>" + "<td>" + gpsData[key] + "</td></tr>";
-
-                                            /* We add the table row to the table body */
-                                            gpsTableBody.innerHTML += tr;
-                                        }
-
-                                        // Reading Temp data by index
-                                        tempData = tempReading[i];
-
-                                        // Removing old data in the Table. 
-                                        tempTableBody.innerHTML = "";
-
-                                        // iterating on the Temp. Data sdd 
-                                        for (var key in tempData) {
-
-                                            var tr = "<tr>";
-
-                                            tr += "<td>" + key + "</td>" + "<td>" + tempData[key] + "</td></tr>";
-
-                                            /* We add the table row to the table body */
-                                            tempTableBody.innerHTML += tr;
-                                        }
+                            // Variables needed for Temp Reading. 
+                            var tempData = data["temperatureReadings"][i];
 
 
-                                        // Each reading is also a dictionary
-                                        accelData = accelReading[i];
 
-                                        // Removing old data in the Table. 
-                                        accelTableBody.innerHTML = "";
+                            /********* GPS Reading *************/
+                            if (isEmptyObject(gpsData)) {
+                                console.log("no data found");
+                            } else {
+                                // Empty the table of the Gps reading. 
+                                gpsTableBody.innerHTML = "";
 
-                                        // Iterating over each reading
-                                        for (var key in accelData) {
+                                // Iterating on the GPS data. 
+                                for (var key in gpsData) {
+                                    var tr = "<tr>";
+                                    if (!(key == "contract" ||
+                                        key == "$class" ||
+                                        key == "shipment" ||
+                                        key == "transactionId"
+                                    )) {
 
-                                            var tr = "<tr>";
+                                        tr += "<td>" + key + "</td>" + "<td>" + gpsData[key] + "</td></tr>";
+                                    }
 
-                                            //Create new table rows
+
+                                    /* We add the table row to the table body */
+                                    gpsTableBody.innerHTML += tr;
+                                }
+                            }
+
+
+                            /********* Temprature *************/
+                            if (isEmptyObject(tempData)) {
+                                console.log("no data found");
+                            } else {
+                                // Removing old data in the Table. 
+                                tempTableBody.innerHTML = "";
+
+                                for (var key in tempData) {
+                                    var tr = "<tr>";
+                                    if (key == "celsius" || key == "timestamp") {
+                                        tr += "<td>" + key + "</td>" + "<td>" + tempData[key] + "</td></tr>";
+                                    }
+                                    /* We add the table row to the table body */
+                                    tempTableBody.innerHTML += tr;
+                                }
+
+
+
+
+
+                                /********* Acceleration *************/
+                                // Iterating over each reading
+                                if (isEmptyObject(accelData)) {
+                                    console.log("no data found");
+                                } else {
+                                    // Removing old data in the Table. 
+                                    accelTableBody.innerHTML = "";
+
+                                    for (var key in accelData) {
+                                        var tr = "<tr>";
+                                        if (!(key == "contract" ||
+                                            key == "$class" ||
+                                            key == "shipment" ||
+                                            key == "transactionId"
+                                        )) {
+
                                             tr += "<td>" + key + "</td>" + "<td>" + accelData[key] + "</td></tr>";
-
-                                            // Update the table with the new rows 
-                                            accelTableBody.innerHTML += tr;
-
                                         }
-                                        // This happens every two seconds
-                                        // Updatin the index of the loop [i]
-                                    }, 2000 * i);
-                                })(i);
-                            };
-                        });
+                                        // Update the table with the new rows 
+                                        accelTableBody.innerHTML += tr;
 
+                                    }
+                                }
+                            }
+
+                        }
+                        i++;
                     });
-                }
+                }, 4000);
             });
-        }, 10 * 1000);
-
+        });
 
     </script>
+
 </body>
 
 </html>
